@@ -32,16 +32,15 @@ OpenClaw Easy Deploy is a community-contributed one-click installer designed to 
 
 Official OpenClaw deployment requires:
 - ❌ Manually installing Node.js 22+
-- ❌ Manually installing Docker and Docker Compose
-- ❌ Configuring a 80+ line `.env` file
-- ❌ Reading a complex 600+ line installation script
-- ❌ Dealing with platform-specific issues
+- ❌ Reading the official docs to figure out the right install path
+- ❌ Understanding npm global installs and PATH configuration
+- ❌ Dealing with platform-specific permission issues
 
 **With this tool:**
 - ✅ One command installs everything
-- ✅ Auto-detects and installs dependencies
-- ✅ Interactive configuration wizard
-- ✅ Smart error diagnosis and auto-fixes
+- ✅ Auto-detects and installs Node.js 22+ if missing
+- ✅ Installs `openclaw` globally via npm
+- ✅ Hands off to the official `openclaw onboard` wizard (so config is always up-to-date)
 - ✅ Full Chinese & English support
 
 ### 🚀 Quick Start
@@ -67,12 +66,25 @@ chmod +x install.sh
 irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
 ```
 
+### ⚙️ What the Script Does
+
+1. **Detects your OS and architecture**
+2. **Installs Node.js 22+** (via Homebrew on macOS, nvm on Linux) — skipped if already installed
+3. **Installs OpenClaw** via `npm install -g openclaw@latest`
+4. **Runs `openclaw onboard --install-daemon`** — the official interactive wizard that:
+   - Configures your AI model (Claude, OpenAI, Gemini, etc.)
+   - Generates a secure Gateway token
+   - Installs the background daemon (auto-start on login)
+   - Starts the Gateway
+5. **Verifies** the installation and prints useful commands
+
 ### 📋 System Requirements
 
 - **OS**: macOS 10.15+, Ubuntu 20.04+, Debian 10+, CentOS 8+, Windows 10+
 - **Architecture**: x86_64 or arm64 (Apple Silicon)
-- **Disk Space**: At least 2 GB free
-- **RAM**: 2 GB or more recommended
+- **Disk Space**: At least 500 MB free
+- **RAM**: 1 GB or more recommended
+- **Node.js**: 22+ (auto-installed if missing)
 
 ### 📚 Documentation
 
@@ -116,16 +128,15 @@ OpenClaw Easy Deploy 是一个社区贡献的一键部署工具，旨在解决 [
 
 官方 OpenClaw 部署需要：
 - ❌ 手动安装 Node.js 22+
-- ❌ 手动安装 Docker 和 Docker Compose
-- ❌ 配置 80+ 行的 .env 文件
-- ❌ 理解复杂的 600+ 行安装脚本
-- ❌ 处理各种平台特定问题
+- ❌ 查阅官方文档弄清楚正确的安装路线
+- ❌ 处理 npm 全局安装和 PATH 配置问题
+- ❌ 应对各平台特有的权限问题
 
 **使用本工具后：**
 - ✅ 一条命令完成所有安装
-- ✅ 自动检测并安装依赖
-- ✅ 交互式配置向导
-- ✅ 智能错误诊断和修复
+- ✅ 自动检测并安装 Node.js 22+
+- ✅ 自动通过 npm 全局安装 openclaw
+- ✅ 直接调用官方 `openclaw onboard` 向导（确保配置始终与官方一致）
 - ✅ 中英双语支持
 
 ### 🚀 快速开始
@@ -151,12 +162,25 @@ chmod +x install.sh
 irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
 ```
 
+### ⚙️ 脚本做了什么
+
+1. **检测操作系统和 CPU 架构**
+2. **安装 Node.js 22+**（macOS 用 Homebrew，Linux 用 nvm）—— 已安装则跳过
+3. **安装 OpenClaw**：`npm install -g openclaw@latest`
+4. **运行 `openclaw onboard --install-daemon`**（官方交互式向导）：
+   - 配置 AI 模型（Claude、OpenAI、Gemini 等）
+   - 生成安全的 Gateway Token
+   - 安装后台守护进程（登录自启）
+   - 启动 Gateway
+5. **验证安装** 并打印常用命令
+
 ### 📋 系统要求
 
 - **操作系统**: macOS 10.15+, Ubuntu 20.04+, Debian 10+, CentOS 8+, Windows 10+
 - **CPU 架构**: x86_64 或 arm64 (Apple Silicon)
-- **磁盘空间**: 至少 2GB 可用空间
-- **内存**: 建议 2GB 以上
+- **磁盘空间**: 至少 500MB 可用空间
+- **内存**: 建议 1GB 以上
+- **Node.js**: 22+（缺失会自动安装）
 
 ### 🎯 功能特性
 
@@ -190,7 +214,6 @@ irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/inst
 #### 🌍 多语言支持
 - 完整的中英双语文档
 - 中文友好的错误提示
-- 针对中国用户的特殊优化（镜像源等）
 
 ### 📸 安装演示
 
@@ -206,33 +229,25 @@ irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/inst
 ℹ 操作系统: macOS 14.2
 ℹ CPU 架构: Apple Silicon (M1/M2/M3)
 ✅ Node.js: v22.1.0
-✅ Docker: 24.0.7
 ✅ 可用磁盘空间: 50GB
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-配置 OpenClaw
+安装 OpenClaw（NPM 方式）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Gateway Token 已生成
-是否配置 Claude API Key? (y/N): y
-请输入 Claude API Key: sk-ant-xxxxx
-✅ Claude API Key 已保存
+✅ OpenClaw 2026.3.11 安装成功
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-启动 OpenClaw
+运行 OpenClaw 配置向导（onboard）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ OpenClaw 服务启动成功
-✅ 健康检查通过
+✅ onboard 配置向导完成！
 
 ╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
 ║                   🎉  安装成功！ 🎉                           ║
-║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
 📍 访问地址: http://localhost:18789
-🔑 Gateway Token: abc123...xyz
 ```
 
 ### 📚 详细文档
@@ -245,46 +260,46 @@ irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/inst
 
 ### 🔧 安装后管理
 
-安装完成后，您可以使用以下命令管理 OpenClaw：
+安装完成后，使用 `openclaw` CLI 管理 OpenClaw：
 
 ```bash
-# 查看服务状态
-docker compose -f ~/.openclaw/docker-compose.yml ps
+# 查看 Gateway 状态
+openclaw gateway status
 
-# 查看日志
-docker compose -f ~/.openclaw/docker-compose.yml logs -f
+# 查看 Gateway 日志
+openclaw gateway logs
 
-# 停止服务
-docker compose -f ~/.openclaw/docker-compose.yml down
+# 停止守护进程
+openclaw daemon stop
 
-# 重启服务
-docker compose -f ~/.openclaw/docker-compose.yml restart
+# 启动守护进程
+openclaw daemon start
 
 # 更新到最新版
-cd ~/.openclaw && ./docker-setup.sh
+npm update -g openclaw
+
+# 重新运行配置向导
+openclaw onboard
 ```
 
 ### 🔑 配置聊天平台
 
-#### WhatsApp (扫码登录)
+#### WhatsApp（扫码登录）
 
 ```bash
-cd ~/.openclaw
-docker compose run --rm openclaw-cli channels login
+openclaw channels login --channel whatsapp
 ```
 
-#### Telegram (Bot Token)
+#### Telegram（Bot Token）
 
 ```bash
-cd ~/.openclaw
-docker compose run --rm openclaw-cli channels add --channel telegram --token YOUR_BOT_TOKEN
+openclaw channels add --channel telegram --token YOUR_BOT_TOKEN
 ```
 
-#### Discord (Bot Token)
+#### Discord（Bot Token）
 
 ```bash
-cd ~/.openclaw
-docker compose run --rm openclaw-cli channels add --channel discord --token YOUR_BOT_TOKEN
+openclaw channels add --channel discord --token YOUR_BOT_TOKEN
 ```
 
 更多详情请查看 [官方文档](https://docs.openclaw.ai/channels)。
@@ -306,4 +321,3 @@ MIT License - 详见 [LICENSE](LICENSE)
 ---
 
 **注意**: 本项目是社区贡献的简化安装工具，不是 OpenClaw 官方项目。
-

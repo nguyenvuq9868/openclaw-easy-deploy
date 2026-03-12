@@ -345,46 +345,37 @@ install_node() {
 }
 
 install_docker() {
-    log_step "安装 Docker"
+    # Docker 在 NPM 主路线下是可选的（仅 Docker 路线需要）
+    # 此函数在 NPM 路线下不会被调用
+    log_step "安装 Docker（可选）"
 
     if [[ "$OS" == "macos" ]]; then
-        log_info "macOS 用户请手动安装 Docker Desktop:"
-        log_info "1. 访问: https://www.docker.com/products/docker-desktop"
-        log_info "2. 下载并安装 Docker Desktop for Mac"
-        log_info "3. 启动 Docker Desktop"
         echo ""
+        log_info "macOS 需要手动安装 Docker Desktop："
+        echo ""
+        echo -e "  ${BLUE}1.${NC} 访问: https://www.docker.com/products/docker-desktop"
+        echo -e "  ${BLUE}2.${NC} 点击 \"Download for Mac (Apple Silicon)\" 或 \"(Intel Chip)\""
+        echo -e "  ${BLUE}3.${NC} 安装完成后启动 Docker Desktop，等待菜单栏图标变为 ▶"
+        echo ""
+        log_warning "安装完成后请重新运行本脚本"
+        return 1
 
-        if ask_yes_no "是否已完成 Docker Desktop 安装并启动?" "n"; then
-            if check_docker; then
-                return 0
-            else
-                log_error "Docker 检测失败,请确保 Docker Desktop 已启动"
-                return 1
-            fi
-        else
-            log_error "需要 Docker 才能继续安装"
+    elif [[ "$OS" == "linux" ]]; then
+        log_info "正在通过官方脚本安装 Docker Engine..."
+        if ! curl -fsSL https://get.docker.com | sudo sh; then
+            log_error "Docker 安装失败"
             return 1
         fi
 
-    elif [[ "$OS" == "linux" ]]; then
-        log_info "正在安装 Docker..."
-
-        # 使用官方安装脚本
-        curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-        sudo sh /tmp/get-docker.sh
-
-        # 将当前用户添加到 docker 组
+        # 添加当前用户到 docker 组
         sudo usermod -aG docker "$USER"
 
-        log_success "Docker 安装成功"
-        log_warning "⚠ 需要重新登录（或新开终端）才能使 docker 组权限生效"
-        log_info "当前会话临时激活权限，继续安装..."
-        # 用 sg 在当前脚本剩余部分以 docker 组权限执行
-        # 注意：这只对当前脚本进程有效，用户下次登录前仍需 newgrp
-        if command_exists newgrp; then
-            exec sg docker -c "bash $0 $*" 2>/dev/null || true
-        fi
+        # 启动 Docker 服务
+        sudo systemctl enable docker 2>/dev/null || true
+        sudo systemctl start docker 2>/dev/null || true
 
+        log_success "Docker 安装成功"
+        log_warning "⚠ 需要重新登录才能免 sudo 使用 Docker，当前会话用 sudo 临时运行"
         return 0
     fi
 }
@@ -393,132 +384,140 @@ install_docker() {
 # 配置函数
 # ============================================================================
 
-configure_openclaw() {
-    log_step "配置 OpenClaw"
+# ============================================================================
+# 安装 OpenClaw（NPM 路线）
+# ============================================================================
 
-    # 创建配置目录
-    mkdir -p "$INSTALL_DIR"
+install_openclaw_npm() {
+    log_step "安装 OpenClaw（NPM 方式）"
 
-    # 生成 Gateway Token
-    log_info "正在生成 Gateway Token..."
-    GATEWAY_TOKEN=$(generate_token)
-    log_success "Gateway Token 已生成"
-
-    # 询问 API Keys
-    echo ""
-    log_info "配置 AI 模型 (至少需要一个)"
+    log_info "正在通过 npm 全局安装最新版 OpenClaw..."
     echo ""
 
-    CLAUDE_KEY=""
-    OPENAI_KEY=""
-    GEMINI_KEY=""
-
-    if ask_yes_no "是否配置 Claude API Key?" "n"; then
-        CLAUDE_KEY=$(ask_input "请输入 Claude API Key" "")
-        if [[ -n "$CLAUDE_KEY" ]]; then
-            log_success "Claude API Key 已保存"
+    # npm install -g openclaw@latest
+    # 如果在 macOS 上 npm 全局安装需要权限，先尝试直接安装，失败则提示
+    if ! npm install -g openclaw@latest 2>&1; then
+        log_warning "npm 全局安装失败，尝试使用 sudo..."
+        if ! sudo npm install -g openclaw@latest; then
+            log_error "OpenClaw 安装失败"
+            log_info "请手动运行: npm install -g openclaw@latest"
+            return 1
         fi
     fi
 
-    echo ""
-    if ask_yes_no "是否配置 OpenAI API Key?" "n"; then
-        OPENAI_KEY=$(ask_input "请输入 OpenAI API Key" "")
-        if [[ -n "$OPENAI_KEY" ]]; then
-            log_success "OpenAI API Key 已保存"
+    # 验证安装成功
+    if ! command_exists openclaw; then
+        # 可能 npm global bin 不在 PATH 里，尝试加载
+        local npm_bin
+        npm_bin=$(npm bin -g 2>/dev/null || npm root -g 2>/dev/null | sed 's|/node_modules||')
+        if [[ -f "$npm_bin/openclaw" ]]; then
+            export PATH="$npm_bin:$PATH"
         fi
     fi
 
+    if command_exists openclaw; then
+        local oc_version
+        oc_version=$(openclaw --version 2>/dev/null || echo "已安装")
+        log_success "OpenClaw $oc_version 安装成功"
+        return 0
+    else
+        log_error "openclaw 命令未找到，请检查 npm 全局路径是否在 PATH 中"
+        log_info "可运行: npm bin -g  查看全局 bin 目录"
+        return 1
+    fi
+}
+
+# ============================================================================
+# 运行 openclaw onboard（交互式向导）
+# ============================================================================
+
+run_onboard() {
+    log_step "运行 OpenClaw 配置向导（onboard）"
+
     echo ""
-    if ask_yes_no "是否配置 Gemini API Key?" "n"; then
-        GEMINI_KEY=$(ask_input "请输入 Gemini API Key" "")
-        if [[ -n "$GEMINI_KEY" ]]; then
-            log_success "Gemini API Key 已保存"
-        fi
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${YELLOW}  接下来将运行 OpenClaw 官方交互式配置向导${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "  向导会引导你完成："
+    echo -e "  ${BLUE}•${NC} 配置 AI 模型（Claude / OpenAI / Gemini 等）"
+    echo -e "  ${BLUE}•${NC} 生成 Gateway Token"
+    echo -e "  ${BLUE}•${NC} 安装守护进程（开机自启）"
+    echo -e "  ${BLUE}•${NC} 启动 Gateway 服务"
+    echo ""
+    echo -e "  ${YELLOW}提示：${NC}按照提示操作即可，完成后回到这里。"
+    echo ""
+
+    if ! ask_yes_no "准备好了，开始向导?" "y"; then
+        log_warning "已跳过配置向导"
+        log_info "你可以随时手动运行: openclaw onboard --install-daemon"
+        return 0
     fi
 
-    # 检查是否至少配置了一个 API Key
-    if [[ -z "$CLAUDE_KEY" ]] && [[ -z "$OPENAI_KEY" ]] && [[ -z "$GEMINI_KEY" ]]; then
-        log_warning "未配置任何 AI 模型 API Key"
-        log_info "您可以稍后通过编辑 ~/.openclaw/.env 文件添加"
+    echo ""
+    log_info "正在启动 openclaw onboard --install-daemon ..."
+    echo ""
+
+    # 运行官方 onboard 向导，带 --install-daemon 参数自动安装守护进程
+    if openclaw onboard --install-daemon; then
+        echo ""
+        log_success "onboard 配置向导完成！"
+        return 0
+    else
+        local exit_code=$?
+        echo ""
+        log_warning "onboard 向导退出（退出码: $exit_code）"
+        log_info "如果已手动跳过部分步骤，这是正常的"
+        log_info "可随时重新运行: openclaw onboard --install-daemon"
+        # 不返回 1，因为用户可能故意退出
+        return 0
     fi
-
-    # 生成 .env 文件
-    log_info "正在生成配置文件..."
-
-    cat > "$INSTALL_DIR/.env" <<EOF
-# OpenClaw 配置文件
-# 由 OpenClaw Easy Deploy 自动生成
-
-# Gateway 配置
-OPENCLAW_GATEWAY_TOKEN="$GATEWAY_TOKEN"
-OPENCLAW_CONFIG_DIR="$INSTALL_DIR"
-OPENCLAW_WORKSPACE_DIR="$INSTALL_DIR/workspace"
-OPENCLAW_GATEWAY_PORT="$OPENCLAW_PORT"
-OPENCLAW_BRIDGE_PORT="$OPENCLAW_BRIDGE_PORT"
-OPENCLAW_GATEWAY_BIND=lan
-
-# AI 模型配置
-CLAUDE_AI_SESSION_KEY="$CLAUDE_KEY"
-OPENAI_API_KEY="$OPENAI_KEY"
-GEMINI_API_KEY="$GEMINI_KEY"
-
-# Docker 配置
-OPENCLAW_SANDBOX=0
-EOF
-
-    log_success "配置文件已生成: $INSTALL_DIR/.env"
 }
 
 # ============================================================================
 # 启动服务函数
 # ============================================================================
 
-start_openclaw() {
-    log_step "启动 OpenClaw"
+# ============================================================================
+# Docker 路线：下载并运行 docker-setup.sh（可选，高级用户）
+# ============================================================================
 
-    # 创建必要的目录
-    mkdir -p "$INSTALL_DIR/workspace"
-    mkdir -p "$INSTALL_DIR/identity"
-    mkdir -p "$INSTALL_DIR/agents/main/agent"
-    mkdir -p "$INSTALL_DIR/agents/main/sessions"
+start_openclaw_docker() {
+    log_step "启动 OpenClaw（Docker 路线）"
 
-    # 下载 docker-compose.yml 和 docker-setup.sh
-    log_info "正在下载 OpenClaw 配置文件..."
-
+    mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 
     # 下载官方 docker-compose.yml
-    if ! curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw/main/docker-compose.yml -o docker-compose.yml; then
-        log_error "下载 docker-compose.yml 失败"
+    log_info "下载 docker-compose.yml..."
+    if ! curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw/main/docker-compose.yml \
+            -o "$INSTALL_DIR/docker-compose.yml"; then
+        log_error "下载 docker-compose.yml 失败，请检查网络"
         return 1
     fi
 
     # 下载官方 docker-setup.sh
-    if ! curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw/main/docker-setup.sh -o docker-setup.sh; then
-        log_error "下载 docker-setup.sh 失败"
+    log_info "下载 docker-setup.sh..."
+    if ! curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw/main/docker-setup.sh \
+            -o "$INSTALL_DIR/docker-setup.sh"; then
+        log_error "下载 docker-setup.sh 失败，请检查网络"
         return 1
     fi
-
-    chmod +x docker-setup.sh
-
+    chmod +x "$INSTALL_DIR/docker-setup.sh"
     log_success "配置文件下载完成"
 
-    # 运行 docker-setup.sh
-    log_info "正在启动 OpenClaw 服务..."
+    # 使用 GHCR 公开镜像（不需要本地 docker build）
+    export OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}"
+    log_info "使用镜像: $OPENCLAW_IMAGE"
+    log_info "正在运行 docker-setup.sh（会拉取镜像并启动向导）..."
+    echo ""
 
-    # 导出环境变量
-    export OPENCLAW_CONFIG_DIR="$INSTALL_DIR"
-    export OPENCLAW_WORKSPACE_DIR="$INSTALL_DIR/workspace"
-    export OPENCLAW_GATEWAY_PORT="$OPENCLAW_PORT"
-    export OPENCLAW_BRIDGE_PORT="$OPENCLAW_BRIDGE_PORT"
-    export OPENCLAW_GATEWAY_TOKEN="$GATEWAY_TOKEN"
-
-    # 运行官方安装脚本
-    if ./docker-setup.sh; then
+    if "$INSTALL_DIR/docker-setup.sh"; then
         log_success "OpenClaw 服务启动成功"
         return 0
     else
-        log_error "OpenClaw 服务启动失败"
+        log_error "docker-setup.sh 运行失败"
+        log_info "请查看日志: $LOG_FILE"
         return 1
     fi
 }
@@ -530,38 +529,52 @@ start_openclaw() {
 verify_installation() {
     log_step "验证安装"
 
-    log_info "等待服务启动..."
-    sleep 10
-
-    # 检查端口
-    if check_port "$OPENCLAW_PORT"; then
-        log_success "端口 $OPENCLAW_PORT 已监听"
-    else
-        log_error "端口 $OPENCLAW_PORT 未监听"
-        return 1
+    # 检查 openclaw 命令是否存在
+    if ! command_exists openclaw; then
+        log_warning "openclaw 命令未找到，可能需要重新打开终端后生效"
+        log_info "尝试运行: openclaw --version"
+        return 0
     fi
 
-    # 健康检查
-    log_info "正在进行健康检查..."
+    local oc_ver
+    oc_ver=$(openclaw --version 2>/dev/null || echo "未知版本")
+    log_success "openclaw 命令已就绪（$oc_ver）"
 
-    local max_retries=5
-    local retry=0
-
-    while [[ $retry -lt $max_retries ]]; do
-        if curl -f -s "http://localhost:$OPENCLAW_PORT/healthz" > /dev/null 2>&1; then
-            log_success "健康检查通过"
-            return 0
+    # 检查 Gateway 端口（守护进程可能需要几秒才能监听）
+    log_info "等待 Gateway 启动（最多 30 秒）..."
+    local max_wait=30
+    local waited=0
+    while [[ $waited -lt $max_wait ]]; do
+        if check_port "$OPENCLAW_PORT"; then
+            log_success "Gateway 端口 $OPENCLAW_PORT 已监听"
+            break
         fi
-
-        retry=$((retry + 1))
-        if [[ $retry -lt $max_retries ]]; then
-            log_info "重试 $retry/$max_retries..."
-            sleep 5
-        fi
+        sleep 2
+        waited=$((waited + 2))
     done
 
-    log_warning "健康检查失败,但服务可能仍在启动中"
-    log_info "请稍后运行: curl http://localhost:$OPENCLAW_PORT/healthz"
+    if ! check_port "$OPENCLAW_PORT"; then
+        log_warning "Gateway 端口 $OPENCLAW_PORT 暂未监听"
+        log_info "这是正常的，onboard 向导可能尚未完成服务启动"
+        log_info "向导完成后可运行: openclaw gateway status"
+        return 0
+    fi
+
+    # HTTP 健康检查
+    log_info "进行 HTTP 健康检查..."
+    local max_retries=5
+    local retry=0
+    while [[ $retry -lt $max_retries ]]; do
+        if curl -fs "http://localhost:$OPENCLAW_PORT/healthz" >/dev/null 2>&1; then
+            log_success "✅ Gateway 健康检查通过！"
+            return 0
+        fi
+        retry=$((retry + 1))
+        sleep 3
+    done
+
+    log_warning "健康检查未通过，服务可能仍在初始化"
+    log_info "稍后手动检查: curl http://localhost:$OPENCLAW_PORT/healthz"
     return 0
 }
 
@@ -581,43 +594,44 @@ show_success() {
 
 EOF
 
-    echo -e "${GREEN}✅ OpenClaw 已成功安装并运行！${NC}"
+    echo -e "${GREEN}✅ OpenClaw 已成功安装！${NC}"
     echo ""
-    echo -e "${CYAN}📍 访问地址:${NC}"
+    echo -e "${CYAN}📍 访问 Gateway 控制台:${NC}"
     echo -e "   http://localhost:$OPENCLAW_PORT"
+    echo -e "   ${YELLOW}（如果向导已完成并启动了守护进程）${NC}"
     echo ""
-    echo -e "${CYAN}🔑 Gateway Token:${NC}"
-    echo -e "   $GATEWAY_TOKEN"
-    echo -e "   ${YELLOW}(已保存到 $INSTALL_DIR/.env)${NC}"
+    echo -e "${CYAN}📚 常用命令:${NC}"
     echo ""
-    echo -e "${CYAN}📁 配置目录:${NC}"
-    echo -e "   $INSTALL_DIR"
+    echo -e "   ${BLUE}• 查看版本${NC}"
+    echo -e "     openclaw --version"
     echo ""
-    echo -e "${CYAN}📚 下一步操作:${NC}"
+    echo -e "   ${BLUE}• 查看 Gateway 状态${NC}"
+    echo -e "     openclaw gateway status"
     echo ""
-    echo -e "   ${BLUE}1. 配置聊天平台 (WhatsApp/Telegram/Discord)${NC}"
-    echo -e "      cd $INSTALL_DIR"
-    echo -e "      docker compose run --rm openclaw-cli channels login"
+    echo -e "   ${BLUE}• 重新运行配置向导${NC}"
+    echo -e "     openclaw onboard"
     echo ""
-    echo -e "   ${BLUE}2. 查看服务状态${NC}"
-    echo -e "      docker compose -f $INSTALL_DIR/docker-compose.yml ps"
+    echo -e "   ${BLUE}• 连接聊天平台（以 Telegram 为例）${NC}"
+    echo -e "     openclaw channels add --channel telegram --token <BOT_TOKEN>"
     echo ""
-    echo -e "   ${BLUE}3. 查看日志${NC}"
-    echo -e "      docker compose -f $INSTALL_DIR/docker-compose.yml logs -f"
+    echo -e "   ${BLUE}• 查看所有已连接渠道${NC}"
+    echo -e "     openclaw channels list"
     echo ""
-    echo -e "   ${BLUE}4. 停止服务${NC}"
-    echo -e "      docker compose -f $INSTALL_DIR/docker-compose.yml down"
+    echo -e "   ${BLUE}• 查看 Gateway 日志${NC}"
+    echo -e "     openclaw gateway logs"
     echo ""
-    echo -e "   ${BLUE}5. 重启服务${NC}"
-    echo -e "      docker compose -f $INSTALL_DIR/docker-compose.yml restart"
+    echo -e "   ${BLUE}• 停止/启动守护进程${NC}"
+    echo -e "     openclaw daemon stop"
+    echo -e "     openclaw daemon start"
     echo ""
     echo -e "${CYAN}📖 完整文档:${NC}"
     echo -e "   https://github.com/JFroson0610/openclaw-easy-deploy"
+    echo -e "   https://docs.openclaw.ai/start/getting-started"
     echo -e "   https://docs.openclaw.ai"
     echo ""
     echo -e "${CYAN}❓ 遇到问题?${NC}"
     echo -e "   - 查看日志: $LOG_FILE"
-    echo -e "   - 故障排查: docs/troubleshooting-zh.md"
+    echo -e "   - 故障排查: https://github.com/JFroson0610/openclaw-easy-deploy/blob/main/docs/installation-zh.md"
     echo -e "   - 提交 Issue: https://github.com/JFroson0610/openclaw-easy-deploy/issues"
     echo ""
 }
@@ -636,59 +650,37 @@ main() {
     # 检测系统环境
     detect_os
 
-    # 检查依赖
-    local need_node=false
-    local need_docker=false
-
+    # ── 步骤 1：检查 / 安装 Node.js（必须） ───────────────────────────────
     if ! check_node; then
-        need_node=true
-    fi
-
-    if ! check_docker; then
-        need_docker=true
-    fi
-
-    # 安装缺失的依赖
-    if [[ "$need_node" == true ]]; then
+        log_warning "未检测到 Node.js 22+"
         if ask_yes_no "是否自动安装 Node.js 22?" "y"; then
             if ! install_node; then
-                log_error "Node.js 安装失败,无法继续"
+                log_error "Node.js 安装失败，请手动安装后重试"
+                log_info "参考: https://nodejs.org/en/download/package-manager"
                 exit 1
             fi
         else
-            log_error "需要 Node.js 22+ 才能继续"
+            log_error "Node.js 22+ 是必须的，安装中止"
             exit 1
         fi
     fi
 
-    if [[ "$need_docker" == true ]]; then
-        if ask_yes_no "是否安装 Docker?" "y"; then
-            if ! install_docker; then
-                log_error "Docker 安装失败,无法继续"
-                exit 1
-            fi
-        else
-            log_error "需要 Docker 才能继续"
-            exit 1
-        fi
-    fi
-
-    # 配置 OpenClaw
-    configure_openclaw
-
-    # 启动服务
-    if ! start_openclaw; then
-        log_error "OpenClaw 启动失败"
+    # ── 步骤 2：安装 OpenClaw（npm install -g） ───────────────────────────
+    if ! install_openclaw_npm; then
+        log_error "OpenClaw 安装失败，请查看日志: $LOG_FILE"
         exit 1
     fi
 
-    # 验证安装
+    # ── 步骤 3：运行官方 onboard 交互式向导 ──────────────────────────────
+    run_onboard
+
+    # ── 步骤 4：验证安装结果 ─────────────────────────────────────────────
     verify_installation
 
-    # 显示成功信息
+    # ── 步骤 5：显示成功信息和常用命令 ───────────────────────────────────
     show_success
 
-    log_success "安装完成!"
+    log_success "全部完成！"
 }
 
 # ============================================================================
@@ -696,4 +688,3 @@ main() {
 # ============================================================================
 
 main "$@"
-
