@@ -4,7 +4,7 @@
 # 适用于 macOS 和 Linux
 #
 # 使用方法:
-#   curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-easy-deploy/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
 #
 # 或者下载后执行:
 #   chmod +x install.sh && ./install.sh
@@ -120,9 +120,10 @@ generate_token() {
 }
 
 check_port() {
+    # 检查指定端口是否有进程在监听（返回 0 = 有进程监听）
     local port="$1"
     if command_exists lsof; then
-        lsof -i ":$port" >/dev/null 2>&1
+        lsof -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
     elif command_exists netstat; then
         netstat -an | grep ":$port " | grep LISTEN >/dev/null 2>&1
     else
@@ -164,7 +165,7 @@ show_welcome() {
 
 EOF
     echo -e "  版本: ${GREEN}v${VERSION}${NC}"
-    echo -e "  项目: ${BLUE}https://github.com/YOUR_USERNAME/openclaw-easy-deploy${NC}"
+    echo -e "  项目: ${BLUE}https://github.com/JFroson0610/openclaw-easy-deploy${NC}"
     echo ""
 }
 
@@ -296,27 +297,36 @@ install_node() {
     if [[ "$OS" == "macos" ]]; then
         # macOS: 优先使用 Homebrew
         if command_exists brew; then
-            log_info "使用 Homebrew 安装 Node.js..."
+            log_info "使用 Homebrew 安装 Node.js 22..."
             if brew install node@22; then
-                log_success "Node.js 22 安装成功"
-                # 添加到 PATH
-                export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+                # node@22 是 keg-only，需要手动设置 PATH
+                if [[ -d "/opt/homebrew/opt/node@22/bin" ]]; then
+                    export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+                elif [[ -d "/usr/local/opt/node@22/bin" ]]; then
+                    export PATH="/usr/local/opt/node@22/bin:$PATH"
+                fi
+                log_success "Node.js 22 安装成功 (Homebrew)"
                 return 0
             else
-                log_warning "Homebrew 安装失败,尝试使用 nvm..."
+                log_warning "Homebrew 安装失败，尝试使用 nvm..."
             fi
         fi
     fi
 
     # 使用 nvm 安装 (macOS 和 Linux 通用)
-    log_info "使用 nvm 安装 Node.js..."
+    log_info "使用 nvm 安装 Node.js 22..."
 
-    if ! command_exists nvm; then
+    # 加载 nvm（如果已安装但当前 shell 未激活）
+    export NVM_DIR="$HOME/.nvm"
+    if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+        \. "$NVM_DIR/nvm.sh"
+    fi
+
+    # nvm 是 shell 函数，不能用 command_exists 检测，用 type 代替
+    if ! type nvm &>/dev/null; then
         log_info "正在安装 nvm..."
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-
-        # 加载 nvm
-        export NVM_DIR="$HOME/.nvm"
+        # 安装后立即加载
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     fi
 
@@ -367,8 +377,13 @@ install_docker() {
         sudo usermod -aG docker "$USER"
 
         log_success "Docker 安装成功"
-        log_warning "需要重新登录以使 docker 组权限生效"
-        log_info "或者运行: newgrp docker"
+        log_warning "⚠ 需要重新登录（或新开终端）才能使 docker 组权限生效"
+        log_info "当前会话临时激活权限，继续安装..."
+        # 用 sg 在当前脚本剩余部分以 docker 组权限执行
+        # 注意：这只对当前脚本进程有效，用户下次登录前仍需 newgrp
+        if command_exists newgrp; then
+            exec sg docker -c "bash $0 $*" 2>/dev/null || true
+        fi
 
         return 0
     fi
@@ -435,20 +450,19 @@ configure_openclaw() {
 # 由 OpenClaw Easy Deploy 自动生成
 
 # Gateway 配置
-OPENCLAW_GATEWAY_TOKEN=$GATEWAY_TOKEN
-OPENCLAW_CONFIG_DIR=$INSTALL_DIR
-OPENCLAW_WORKSPACE_DIR=$INSTALL_DIR/workspace
-OPENCLAW_GATEWAY_PORT=$OPENCLAW_PORT
-OPENCLAW_BRIDGE_PORT=$OPENCLAW_BRIDGE_PORT
+OPENCLAW_GATEWAY_TOKEN="$GATEWAY_TOKEN"
+OPENCLAW_CONFIG_DIR="$INSTALL_DIR"
+OPENCLAW_WORKSPACE_DIR="$INSTALL_DIR/workspace"
+OPENCLAW_GATEWAY_PORT="$OPENCLAW_PORT"
+OPENCLAW_BRIDGE_PORT="$OPENCLAW_BRIDGE_PORT"
 OPENCLAW_GATEWAY_BIND=lan
 
 # AI 模型配置
-CLAUDE_AI_SESSION_KEY=$CLAUDE_KEY
-OPENAI_API_KEY=$OPENAI_KEY
-GEMINI_API_KEY=$GEMINI_KEY
+CLAUDE_AI_SESSION_KEY="$CLAUDE_KEY"
+OPENAI_API_KEY="$OPENAI_KEY"
+GEMINI_API_KEY="$GEMINI_KEY"
 
 # Docker 配置
-OPENCLAW_IMAGE=openclaw:local
 OPENCLAW_SANDBOX=0
 EOF
 
@@ -598,13 +612,13 @@ EOF
     echo -e "      docker compose -f $INSTALL_DIR/docker-compose.yml restart"
     echo ""
     echo -e "${CYAN}📖 完整文档:${NC}"
-    echo -e "   https://github.com/YOUR_USERNAME/openclaw-easy-deploy"
+    echo -e "   https://github.com/JFroson0610/openclaw-easy-deploy"
     echo -e "   https://docs.openclaw.ai"
     echo ""
     echo -e "${CYAN}❓ 遇到问题?${NC}"
     echo -e "   - 查看日志: $LOG_FILE"
     echo -e "   - 故障排查: docs/troubleshooting-zh.md"
-    echo -e "   - 提交 Issue: https://github.com/YOUR_USERNAME/openclaw-easy-deploy/issues"
+    echo -e "   - 提交 Issue: https://github.com/JFroson0610/openclaw-easy-deploy/issues"
     echo ""
 }
 

@@ -3,16 +3,102 @@
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue)](https://github.com/YOUR_USERNAME/openclaw-easy-deploy)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue)](https://github.com/JFroson0610/openclaw-easy-deploy)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-Compatible-green)](https://openclaw.ai)
 
 **让 OpenClaw 部署变得简单 - 零技术门槛，一键安装**
 
-[English](#english) | [中文](#中文)
+[English](#english) | [中文](#中文简介)
 
 </div>
 
 ---
+
+<a name="english"></a>
+
+## 🌟 English
+
+### 📖 What is OpenClaw Easy Deploy?
+
+OpenClaw Easy Deploy is a community-contributed one-click installer designed to eliminate the pain points of deploying [OpenClaw](https://openclaw.ai). Even users with zero technical knowledge can get OpenClaw up and running.
+
+**OpenClaw** is a powerful personal AI assistant that can:
+- 🤖 Connect to multiple AI models (Claude, GPT, Gemini, etc.)
+- 💬 Support multiple chat platforms (WhatsApp, Telegram, Discord, Slack, etc.)
+- 🌐 Browser control, file operations, and skill extensions
+- 🔒 Fully private deployment — your data stays yours
+
+### ✨ Why This Tool?
+
+Official OpenClaw deployment requires:
+- ❌ Manually installing Node.js 22+
+- ❌ Manually installing Docker and Docker Compose
+- ❌ Configuring a 80+ line `.env` file
+- ❌ Reading a complex 600+ line installation script
+- ❌ Dealing with platform-specific issues
+
+**With this tool:**
+- ✅ One command installs everything
+- ✅ Auto-detects and installs dependencies
+- ✅ Interactive configuration wizard
+- ✅ Smart error diagnosis and auto-fixes
+- ✅ Full Chinese & English support
+
+### 🚀 Quick Start
+
+#### macOS / Linux
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
+```
+
+Or download and run:
+
+```bash
+wget https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh
+chmod +x install.sh
+./install.sh
+```
+
+#### Windows
+
+```powershell
+# Run PowerShell as Administrator
+irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
+```
+
+### 📋 System Requirements
+
+- **OS**: macOS 10.15+, Ubuntu 20.04+, Debian 10+, CentOS 8+, Windows 10+
+- **Architecture**: x86_64 or arm64 (Apple Silicon)
+- **Disk Space**: At least 2 GB free
+- **RAM**: 2 GB or more recommended
+
+### 📚 Documentation
+
+- [Installation Guide](docs/installation.md)
+- [Configuration Guide](docs/configuration.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [API Key Setup](docs/api-keys.md)
+- [FAQ](docs/faq.md)
+
+### 🤝 Contributing
+
+Contributions are welcome! Please open an [Issue](https://github.com/JFroson0610/openclaw-easy-deploy/issues) or submit a [Pull Request](https://github.com/JFroson0610/openclaw-easy-deploy/pulls).
+
+### 📄 License
+
+MIT License — see [LICENSE](LICENSE)
+
+### 🙏 Credits
+
+Built on top of [OpenClaw](https://github.com/openclaw/openclaw). Thanks to the OpenClaw team for their amazing work!
+
+> **Note**: This is a community-contributed installer, not an official OpenClaw project.
+
+---
+
+<a name="中文简介"></a>
 
 ## 中文
 
@@ -47,13 +133,13 @@ OpenClaw Easy Deploy 是一个社区贡献的一键部署工具，旨在解决 [
 #### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-easy-deploy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
 ```
 
 或者下载后执行：
 
 ```bash
-wget https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-easy-deploy/main/install.sh
+wget https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -62,7 +148,7 @@ chmod +x install.sh
 
 ```powershell
 # 以管理员身份运行 PowerShell
-irm https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-easy-deploy/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
 ```
 
 ### 📋 系统要求
@@ -206,8 +292,8 @@ docker compose run --rm openclaw-cli channels add --channel discord --token YOUR
 ### 🤝 贡献
 
 欢迎贡献！如果您发现问题或有改进建议，请：
-- 提交 Issue: [GitHub Issues](https://github.com/YOUR_USERNAME/openclaw-easy-deploy/issues)
-- 提交 Pull Request: [GitHub PRs](https://github.com/YOUR_USERNAME/openclaw-easy-deploy/pulls)
+- 提交 Issue: [GitHub Issues](https://github.com/JFroson0610/openclaw-easy-deploy/issues)
+- 提交 Pull Request: [GitHub PRs](https://github.com/JFroson0610/openclaw-easy-deploy/pulls)
 
 ### 📄 许可证
 

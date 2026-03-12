@@ -414,7 +414,7 @@ openclaw-manager doctor     # 诊断问题
 │        openclaw-manager logs            │
 │                                         │
 │  📖 完整文档:                            │
-│     https://github.com/YOUR_USERNAME/   │
+│     https://github.com/JFroson0610/   │
 │     openclaw-easy-deploy                │
 └─────────────────────────────────────────┘
 ```

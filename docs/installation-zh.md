@@ -5,7 +5,7 @@
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/openclaw-easy-deploy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
 ```
 
 ### 安装过程
@@ -118,44 +118,108 @@ cd ~/.openclaw
 
 ### 端口被占用
 
-如果端口 18789 被占用，可以修改配置：
+如果端口 18789 被其他程序占用，安装前先查看是哪个进程：
 
 ```bash
-export OPENCLAW_PORT=18790
-./install.sh
+# macOS / Linux
+lsof -iTCP:18789 -sTCP:LISTEN
+
+# 然后使用其他端口运行安装脚本
+OPENCLAW_PORT=18800 ./install.sh
 ```
 
 ### Docker 未启动
 
-macOS 用户需要确保 Docker Desktop 已启动。
+**macOS**: 打开 Launchpad 找到 Docker Desktop，或运行：
+
+```bash
+open -a Docker
+# 等待约 30 秒后重试
+```
+
+**Linux**: 启动 Docker 服务：
+
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker  # 设置开机自启
+```
 
 ### Node.js 版本过低
 
-脚本会自动安装 Node.js 22+，如果失败请手动安装：
+脚本会自动安装 Node.js 22+，如果自动安装失败，请手动安装：
 
 ```bash
-# macOS
+# macOS (Homebrew)
 brew install node@22
+export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
 
-# Linux (使用 nvm)
+# macOS / Linux (nvm)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.nvm/nvm.sh
 nvm install 22
 nvm use 22
+nvm alias default 22
 ```
+
+### Docker 权限问题（Linux）
+
+Linux 下首次安装 Docker 后，需要把用户加入 docker 组：
+
+```bash
+sudo usermod -aG docker $USER
+# 必须重新登录或开新终端才能生效
+newgrp docker
+```
+
+### 服务启动后健康检查失败
+
+服务可能仍在初始化中，等待约 30 秒后手动检查：
+
+```bash
+# 检查服务状态
+docker compose -f ~/.openclaw/docker-compose.yml ps
+
+# 查看详细日志（找 ERROR 行）
+docker compose -f ~/.openclaw/docker-compose.yml logs --tail=50
+
+# 手动健康检查
+curl -v http://localhost:18789/healthz
+```
+
+### 配置文件损坏或丢失
+
+重新生成配置（会备份现有 .env）：
+
+```bash
+cd ~/.openclaw
+cp .env .env.backup.$(date +%Y%m%d%H%M%S)
+# 重新运行安装脚本会重新生成配置
+~/openclaw-easy-deploy/install.sh
+```
+
+---
 
 ## 卸载
 
 ```bash
-# 停止服务
-docker compose -f ~/.openclaw/docker-compose.yml down
+# 1. 停止并移除所有容器和网络
+docker compose -f ~/.openclaw/docker-compose.yml down --volumes
 
-# 删除数据（可选）
+# 2. 删除 OpenClaw 数据目录（⚠️ 不可恢复）
 rm -rf ~/.openclaw
+
+# 3. 可选：移除 Docker 镜像
+docker rmi openclaw:local 2>/dev/null || true
 ```
+
+---
 
 ## 获取帮助
 
-- 查看日志: `~/.openclaw/install.log`
-- 提交 Issue: https://github.com/YOUR_USERNAME/openclaw-easy-deploy/issues
-- 官方文档: https://docs.openclaw.ai
+| 途径 | 链接 |
+|------|------|
+| 📋 安装日志 | `~/.openclaw/install.log` |
+| 🐛 提交 Issue | https://github.com/JFroson0610/openclaw-easy-deploy/issues |
+| 📖 官方文档 | https://docs.openclaw.ai |
+| 💬 OpenClaw 社区 | https://github.com/openclaw/openclaw/discussions |
 
