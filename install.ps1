@@ -203,7 +203,7 @@ function Install-NodeWindows {
         }
     }
 
-    # 方抈2: Chocolatey
+    # 方案2: Chocolatey
     if (Test-CommandExists 'choco') {
         Write-Info "使用 Chocolatey 安装 Node.js 22..."
         try {
@@ -218,7 +218,7 @@ function Install-NodeWindows {
         }
     }
 
-    # 方抈3: 引导手动安装
+    # 方案3: 引导手动安装
     Write-Warning2 "无法自动安装 Node.js，请手动安装："
     Write-Host ""
     Write-Host "  1. 访问: https://nodejs.org/en/download" -ForegroundColor Yellow
@@ -403,6 +403,10 @@ function Show-Success {
     Write-Host "      openclaw daemon stop"
     Write-Host "      openclaw daemon start"
     Write-Host ""
+    Write-Host "  🛠️  管理工具（Linux/macOS）:" -ForegroundColor Cyan
+    Write-Host "     bash <(curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/bin/openclaw-manager)"
+    Write-Host "     （交互式菜单：状态、日志、渠道管理、诊断、卸载）"
+    Write-Host ""
     Write-Host "  📖 完整文档:" -ForegroundColor Cyan
     Write-Host "     https://github.com/JFroson0610/openclaw-easy-deploy"
     Write-Host "     https://docs.openclaw.ai"
@@ -433,7 +437,7 @@ function Main {
 
     Detect-System
 
-    # ── 步骤 1：检查 / 安装 Node.js ─────────────────────────────────────
+    # ── 步骤 1：检查 / 安装 Node.js ─────────────────────────────────────────
     if (-not (Test-NodeVersion)) {
         if (Ask-YesNo "是否自动安装 Node.js 22?") {
             if (-not (Install-NodeWindows)) {
@@ -447,19 +451,19 @@ function Main {
         }
     }
 
-    # ── 步骤 2：安装 OpenClaw ──────────────────────────────────────────
+    # ── 步骤 2：安装 OpenClaw ────────────────────────────────────────────────
     if (-not (Install-OpenclawNpm)) {
         Write-Error2 "OpenClaw 安装失败，请查看日志: $LOG_FILE"
         exit 1
     }
 
-    # ── 步骤 3：运行官方 onboard 向导 ──────────────────────────────────
+    # ── 步骤 3：运行官方 onboard 向导 ────────────────────────────────────────
     Run-Onboard
 
-    # ── 步骤 4：验证安装 ───────────────────────────────────────────────
+    # ── 步骤 4：验证安装 ─────────────────────────────────────────────────────
     Verify-Installation
 
-    # ── 步骤 5：显示成功信息 ─────────────────────────────────────────────
+    # ── 步骤 5：显示成功信息 ─────────────────────────────────────────────────
     Show-Success
 
     Write-Log "安装完成"
