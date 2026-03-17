@@ -1,16 +1,14 @@
 name: Setup Repository Metadata
 
-# 手动触发 或 首次推送到 main 自动运行
+# 每次推送到 main 时自动运行，也支持手动触发
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
-    paths:
-      - '.github/workflows/setup-repo.yml'
 
 jobs:
   set-topics:
-    name: Set Repository Topics & About
+    name: Set Repository Topics
     runs-on: ubuntu-latest
     permissions:
       contents: read
