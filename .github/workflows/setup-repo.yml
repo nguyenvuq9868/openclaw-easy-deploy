@@ -1,6 +1,5 @@
 name: Setup Repository Metadata
 
-# 每次推送到 main 时自动运行，也支持手动触发
 on:
   workflow_dispatch:
   push:
@@ -12,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # 仓库元数据写入需要 administration 权限
+      administration: write
 
     steps:
       - name: Set Topics via GitHub API
