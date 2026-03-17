@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.sh'
+      - 'install.ps1'
+      - 'bin/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # Job 1: Bash 语法检查 + shellcheck 静态分析
+  # ──────────────────────────────────────────────────────────
+  bash-lint:
+    name: Bash Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Syntax check — bash -n
+        run: |
+          echo "=== bash -n syntax check ==="
+          fail=0
+          for f in install.sh scripts/*.sh bin/openclaw-manager; do
+            if [ -f "$f" ]; then
+              bash -n "$f" && echo "✅ $f" || { echo "❌ $f"; fail=1; }
+            fi
+          done
+          exit $fail
+
+      - name: Shellcheck static analysis
+        run: |
+          echo "=== shellcheck analysis ==="
+          # SC1090: 无法跟踪动态 source；SC2034: 变量看起来未使用（颜色变量）
+          shellcheck --exclude=SC1090,SC2034 \
+            install.sh \
+            scripts/*.sh \
+            bin/openclaw-manager \
+            || true
+          echo "shellcheck 完成"
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: macOS 平台语法验证
+  # ──────────────────────────────────────────────────────────
+  macos-syntax:
+    name: macOS Syntax Check
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Syntax check on macOS bash
+        run: |
+          echo "=== macOS bash -n ==="
+          fail=0
+          for f in install.sh scripts/*.sh bin/openclaw-manager; do
+            if [ -f "$f" ]; then
+              bash -n "$f" && echo "✅ $f" || { echo "❌ $f"; fail=1; }
+            fi
+          done
+          exit $fail
+
+  # ──────────────────────────────────────────────────────────
+  # Job 3: install.sh 冒烟测试（不真正安装，验证脚本可解析）
+  # ──────────────────────────────────────────────────────────
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check shebang lines
+        run: |
+          echo "=== 检查 shebang ==="
+          for f in install.sh scripts/*.sh bin/openclaw-manager; do
+            if [ -f "$f" ]; then
+              head -1 "$f" | grep -q '^#!' \
+                && echo "✅ $f has shebang" \
+                || echo "⚠️  $f missing shebang"
+            fi
+          done
+
+      - name: Check file permissions hint
+        run: |
+          echo "=== 文件结构检查 ==="
+          echo "install.sh 行数: $(wc -l < install.sh)"
+          echo "scripts/ 模块:"
+          ls scripts/
+          echo "bin/:"
+          ls bin/
+          echo "docs/:"
+          ls docs/
+
+      - name: Validate set -euo pipefail
+        run: |
+          echo "=== 检查 set -euo pipefail ==="
+          for f in install.sh scripts/*.sh bin/openclaw-manager; do
+            if [ -f "$f" ]; then
+              grep -q 'set -euo pipefail' "$f" \
+                && echo "✅ $f" \
+                || echo "⚠️  $f 缺少 set -euo pipefail"
+            fi
+          done
+
+  # ──────────────────────────────────────────────────────────
+  # Job 4: 文档完整性检查
+  # ──────────────────────────────────────────────────────────
+  docs-check:
+    name: Docs Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required docs exist
+        run: |
+          echo "=== 必要文档检查 ==="
+          required=(
+            README.md
+            CONTRIBUTING.md
+            docs/installation.md
+            docs/installation-zh.md
+            docs/troubleshooting.md
+            docs/troubleshooting-zh.md
+            docs/faq.md
+            docs/faq-zh.md
+            docs/api-keys.md
+            docs/api-keys-zh.md
+            docs/configuration.md
+            docs/configuration-zh.md
+          )
+          fail=0
+          for doc in "${required[@]}"; do
+            [ -f "$doc" ] \
+              && echo "✅ $doc" \
+              || { echo "❌ 缺少: $doc"; fail=1; }
+          done
+          exit $fail
