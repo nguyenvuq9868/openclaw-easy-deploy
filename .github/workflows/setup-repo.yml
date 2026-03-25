@@ -10,43 +10,31 @@ jobs:
     name: Set Repository Topics
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      # 仓库元数据写入需要 administration 权限
-      administration: write
+      contents: write
 
     steps:
-      - name: Set Topics via GitHub API
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api \
-            --method PUT \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            /repos/${{ github.repository }}/topics \
-            -f 'names[]=openclaw' \
-            -f 'names[]=ai-assistant' \
-            -f 'names[]=chatbot' \
-            -f 'names[]=telegram' \
-            -f 'names[]=discord' \
-            -f 'names[]=whatsapp' \
-            -f 'names[]=bash' \
-            -f 'names[]=nodejs' \
-            -f 'names[]=one-click-install' \
-            -f 'names[]=shell-script' \
-            -f 'names[]=macos' \
-            -f 'names[]=linux' \
-            -f 'names[]=windows' \
-            -f 'names[]=automation' \
-            -f 'names[]=deployment'
-          echo "✅ Topics 已设置完成"
+      - name: Set Topics via actions/github-script
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const topics = [
+              'openclaw', 'ai-assistant', 'chatbot',
+              'telegram', 'discord', 'whatsapp',
+              'bash', 'nodejs', 'one-click-install',
+              'shell-script', 'macos', 'linux',
+              'windows', 'automation', 'deployment'
+            ];
+            await github.rest.repos.replaceAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              names: topics
+            });
+            console.log('✅ Topics 已设置:', topics.join(', '));
 
-      - name: Verify Topics
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "=== 当前仓库 Topics ==="
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/topics \
-            --jq '.names[]'
+            // 验证
+            const result = await github.rest.repos.getAllTopics({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            console.log('当前 Topics:', result.data.names.join(', '));
